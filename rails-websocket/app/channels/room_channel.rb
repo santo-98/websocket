@@ -7,7 +7,8 @@ class RoomChannel < ApplicationCable::Channel
     # Any cleanup needed when channel is unsubscribed
   end
 
-  def received(data)
+  def data_received(data)
+    puts data
     ActionCable.server.broadcast("room_channel", data)
   end
 end
