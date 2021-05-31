@@ -1,41 +1,51 @@
 import ActionCable from 'actioncable'
-import React, { Component, useEffect, useState, useRef } from 'react';
-import { ActionCableProvider, ActionCableConsumer} from 'react-actioncable-provider'
+import React, { useEffect, useState, useRef } from 'react';
 import { API_WS_ROOT } from '../constants'
+import { Editor } from '@tinymce/tinymce-react';
 
 function EditContent(){
   const [data, setData] = useState("");
-
-  const handleOnInput = () => {
-    let keyPressed = document.getElementById("userContent").value
-    console.log(keyPressed)
-  }
-
-  useEffect(()=>{
-    const cable = ActionCable.createConsumer(API_WS_ROOT).subscriptions.create(
+  const connection = useRef();
+  useEffect(() => {
+    connection.current = ActionCable.createConsumer(API_WS_ROOT).subscriptions.create(
     {
       channel: "RoomChannel"
     },{
-      connected: ()=>{console.log("Connected")},
-      received: data => handleReceivedMessage(data)
-    });
-	})
-  
+      connected: ()=>{ console.log("Connected") },
+      received: response => handleReceivedMessage(response)
+    })
+  }, [])
+
+  const handleOnInput = (keyPressed) => {
+    console.log(keyPressed)
+    connection.current.perform("data_received",{message: keyPressed})
+  }
+
 
   const handleReceivedMessage = (response) => {
-    setData(response)
-    // const message = response;
-    // console.log(message)
-    // const conversations = [...this.state.conversations];
-    // const conversation = conversations.find(
-    //   conversation => conversation.id === message.conversation_id
-    // );
+    setData(response.message)
   }
 
   return(
     <>
-      {console.log("Received - " + data)}
-      <textarea className="textarea" id="userContent" onInput={handleOnInput} value={data ? data : null}></textarea>
+      <Editor
+        init={{
+          height: 500,
+          menubar: false,
+          plugins: [
+            'advlist autolink lists link image charmap print preview anchor',
+            'searchreplace visualblocks code fullscreen',
+            'insertdatetime media table paste code help wordcount'
+          ],
+          toolbar: 'undo redo | formatselect | ' +
+          'bold italic backcolor | alignleft aligncenter ' +
+          'alignright alignjustify | bullist numlist outdent indent | ' +
+          'removeformat | help',
+          content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
+        }}
+        onEditorChange={handleOnInput}
+        value={data}
+      />
     </>
   )
 }
