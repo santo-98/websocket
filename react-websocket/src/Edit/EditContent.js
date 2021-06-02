@@ -16,36 +16,21 @@ function EditContent(){
     })
   }, [])
 
-  const handleOnInput = (keyPressed) => {
-    console.log(keyPressed)
+  const handleOnInput = () => {
+    let keyPressed = document.getElementById("userContent").value
+    console.log("message sent - " + keyPressed)
     connection.current.perform("data_received",{message: keyPressed})
   }
 
 
   const handleReceivedMessage = (response) => {
     setData(response.message)
+    console.log("message recieved - " + response.message)
   }
 
   return(
     <>
-      <Editor
-        init={{
-          height: 500,
-          menubar: false,
-          plugins: [
-            'advlist autolink lists link image charmap print preview anchor',
-            'searchreplace visualblocks code fullscreen',
-            'insertdatetime media table paste code help wordcount'
-          ],
-          toolbar: 'undo redo | formatselect | ' +
-          'bold italic backcolor | alignleft aligncenter ' +
-          'alignright alignjustify | bullist numlist outdent indent | ' +
-          'removeformat | help',
-          content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
-        }}
-        onEditorChange={handleOnInput}
-        value={data}
-      />
+      <textarea className="textarea" id="userContent" onInput={handleOnInput} value={data}></textarea>
     </>
   )
 }
